@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[packages]
+click = ">=6.7"
+crayons = "*"
+psycopg2 = ">=2.6.2"
+
+[dev-packages]
+Sphinx = "*"
+pep8 = "*"
+pytest = "*"
+pytest_cov = "*"
