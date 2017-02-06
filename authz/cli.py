@@ -36,6 +36,8 @@ def cli(ctx, debug, psql_host, psql_port, psql_db, psql_user, psql_password):
         if debug:
             raise
         sys.exit(1)
+    # create the tables if they don't exist
+    authzmap.create()
     ctx.authzmap = authzmap
 
 

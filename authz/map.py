@@ -43,7 +43,6 @@ class AuthzMap(collections.abc.MutableMapping):
 
     def __init__(self, *args, **kwargs):
         self._conn = psycopg2.connect(*args, **kwargs)
-        self._create()
 
     @contextlib.contextmanager
     def _transaction(self):
@@ -53,7 +52,7 @@ class AuthzMap(collections.abc.MutableMapping):
             with self._conn.cursor() as cur:
                 yield cur
 
-    def _create(self):
+    def create(self):
         """ Create the tables for authz.
         """
         with self._transaction() as cur:

@@ -7,7 +7,7 @@
 """
 
 
-def authz_mapper(psycopg2conf):
+def authz_mapper(**psycopg2conf):
     """ Returns a function that gets a given user's authorization
     level.
 
