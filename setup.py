@@ -37,7 +37,7 @@ requires = ['psycopg2>=2.6.2']
 requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0', 'pep8']
 
 setup(
-    name='datapunt-authz',
+    name='datapunt_authz',
     version='0.1.0.dev1',
     description='Datapunt authorization',
     long_description=long_description,
