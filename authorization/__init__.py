@@ -1,6 +1,6 @@
 """
-    auth.authz
-    ~~~~~~~~~~
+    authorization
+    ~~~~~~~~~~~~~
 
     This package provides an implementation of the Datapunt authorization
     model.

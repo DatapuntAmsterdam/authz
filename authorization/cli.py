@@ -1,16 +1,16 @@
 """
-    authz.cli
-    ~~~~~~~~~
+    authorization.cli
+    ~~~~~~~~~~~~~~~~~
 """
 import sys
 import click
 import crayons
 import psycopg2
+import authorization_levels
 from .map import AuthzMap
-from . import levels
 
 valid_levels = {
-    l[6:]: getattr(levels, l) for l in dir(levels) if l[:6] == 'LEVEL_'
+    l[6:]: getattr(authorization_levels, l) for l in dir(authorization_levels) if l[:6] == 'LEVEL_'
 }
 
 

@@ -32,16 +32,16 @@ class PyTest(TestCommand):
 with open('README.rst', encoding='utf-8') as f:
     long_description = f.read()
 
-packages = ['authz']
-requires = ['psycopg2>=2.6.2']
-requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0', 'pep8']
+packages = ['authorization']
+requires = ['authorization_levels', 'psycopg2>=2.6.2']
+requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0', 'pytest-pep8>=1.0.6']
 
 setup(
-    name='datapunt-authz',
+    name='datapunt-authorization',
     version='0.1.0.dev1',
     description='Datapunt authorization',
     long_description=long_description,
-    url='https://github.com/DatapuntAmsterdam/authz',
+    url='https://github.com/DatapuntAmsterdam/authorization',
     author='Amsterdam Datapunt',
     author_email='datapunt.ois@amsterdam.nl',
     license='Mozilla Public License Version 2.0',
@@ -64,6 +64,6 @@ setup(
         'cli': ['click>=6.7', 'crayons'],
     },
     entry_points={'console_scripts': [
-        'authz = authz.cli:cli [cli]',
+        'authz = authorization.cli:cli [cli]',
     ]},
 )

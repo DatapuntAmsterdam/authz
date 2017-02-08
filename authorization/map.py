@@ -1,17 +1,16 @@
 """
-    authz.map
-    ~~~~~~~~~
+    authorization.map
+    ~~~~~~~~~~~~~~~~~
 """
 import collections.abc
 import contextlib
 import logging
 import psycopg2
-
-from . import levels
+import authorization_levels
 
 _logger = logging.getLogger(__name__)
 
-_valid_levels = {getattr(levels, l) for l in dir(levels) if l[:6] == 'LEVEL_' and l != 'LEVEL_DEFAULT'}
+_valid_levels = {getattr(authorization_levels, l) for l in dir(authorization_levels) if l[:6] == 'LEVEL_' and l != 'LEVEL_DEFAULT'}
 
 _q_crt_user_authz = """
     CREATE TABLE IF NOT EXISTS user_authz (
