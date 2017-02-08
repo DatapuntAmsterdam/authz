@@ -33,8 +33,8 @@ with open('README.rst', encoding='utf-8') as f:
     long_description = f.read()
 
 packages = ['authorization']
-requires = ['authorization_levels', 'psycopg2>=2.6.2']
-requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0', 'pytest-pep8>=1.0.6']
+requires = ['datapunt-authorization-levels', 'psycopg2>=2.6.2']
+requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0']
 
 setup(
     name='datapunt-authorization',
