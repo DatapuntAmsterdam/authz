@@ -37,7 +37,23 @@ _q_cnt_all = "SELECT COUNT(*) FROM user_authz"
 
 
 class AuthzMap(collections.abc.MutableMapping):
-    """ A MutableMapping for username -> authorization level backed by Postgres.
+    """ A MutableMapping, mapping usernames to authorization levels, backed by
+    Postgres.
+
+    See :func:`psycopg2.connect` for constructor arguments.
+
+    Usage:
+
+    ::
+
+        import authorization
+        import authorization_levels  # from datapunt-authorization-levels
+
+        authzmap = authorization.AuthzMap(**psycopgconf)
+
+        if authzmap['myuser'] == authorization_levels.LEVEL_EMPLOYEE:
+            ...  # do some eployee-e things
+
     """
 
     def __init__(self, *args, **kwargs):
