@@ -1,0 +1,14 @@
+.git
+.gitignore
+docker-compose.yml
+Dockerfile
+.idea
+*.iml
+.project
+.pydevproject
+.venv
+.coveragerc
+.settings
+__pycache__
+docs
+
