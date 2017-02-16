@@ -58,6 +58,7 @@ class AuthzMap(collections.abc.MutableMapping):
 
     def __init__(self, *args, **kwargs):
         self._conn = psycopg2.connect(*args, **kwargs)
+        self._conn.autocommit = True
 
     @contextlib.contextmanager
     def _transaction(self):
