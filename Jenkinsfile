@@ -25,7 +25,7 @@ node {
 
     stage('Test') {
         tryStep "Test", {
-            sh "docker build -t authorization --pull"
+            sh "docker build -t authorization --pull ."
             sh "docker run --user root --rm authorization make -C /app/ coverage"
 	      }, {}
     }
