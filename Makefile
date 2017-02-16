@@ -1,10 +1,10 @@
 .PHONY: test coverage docs release
 
 test:
-	AUTH_SKIP_CONF_CHECK=1 python setup.py test -a "-p no:cacheprovider tests"
+	python setup.py test -a "-p no:cacheprovider tests"
 
 coverage:
-	AUTH_SKIP_CONF_CHECK=1 python setup.py test -a "-p no:cacheprovider --verbose --cov=authz --cov-report=term --cov-config .coveragerc tests"
+	python setup.py test -a "-p no:cacheprovider --verbose --cov=authorization --cov-report=term --cov-config .coveragerc tests"
 
 docs:
 	make -C docs/ html
