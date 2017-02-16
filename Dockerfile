@@ -11,5 +11,3 @@ RUN pip install --no-cache-dir /app[cli]
 
 USER datapunt
 
-CMD ["authz", "--help"]
-
