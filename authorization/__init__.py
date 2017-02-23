@@ -32,6 +32,7 @@ def authz_mapper(**psycopg2conf):
     authzmap = AuthzMap(**psycopg2conf)
 
     def getter(username):
-        return authzmap.get(username, authorization_levels.LEVEL_DEFAULT)
+        default_level = (username and authorization_levels.LEVEL_EMPLOYEE) or authorization_levels.LEVEL_DEFAULT
+        return authzmap.get(username, default_level)
 
     return getter
