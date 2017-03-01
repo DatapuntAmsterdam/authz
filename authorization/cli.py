@@ -18,9 +18,9 @@ valid_levels = {
 @click.option('--debug', is_flag=True)
 @click.option('--psql-host', default='localhost', type=str, envvar='DB_HOST')
 @click.option('--psql-port', default=5432, type=int, envvar='DB_PORT')
-@click.option('--psql-db', type=str, envvar='DB_DATABASE')
-@click.option('--psql-user', type=str, envvar='DB_USER')
-@click.option('--psql-password', type=str, prompt=True, hide_input=True, envvar='DB_PASS')
+@click.option('--psql-db', default='authz', type=str, envvar='DB_DATABASE')
+@click.option('--psql-user', default='authuser', type=str, envvar='DB_USER')
+@click.option('--psql-password', default='authpassword', type=str, prompt=True, hide_input=True, envvar='DB_PASS')
 @click.pass_context
 def cli(ctx, debug, psql_host, psql_port, psql_db, psql_user, psql_password):
     try:
