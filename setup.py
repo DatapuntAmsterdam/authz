@@ -69,6 +69,6 @@ setup(
     install_requires=requires,
     tests_require=requires_test,
     entry_points={'console_scripts': [
-        'authz = authorization.cli:cli [cli]',
+        'authz = authorization.cli:cli',
     ]},
 )
