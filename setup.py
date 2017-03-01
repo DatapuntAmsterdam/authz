@@ -33,12 +33,20 @@ with open('README.rst', encoding='utf-8') as f:
     long_description = f.read()
 
 packages = ['authorization']
-requires = ['datapunt-authorization-levels', 'psycopg2>=2.6.2']
+
+# The 'click' and 'crayons' libraries are needed so Evert can avoid using
+# argparse and have colored CLI output. :(
+requires = [
+    'datapunt-authorization-levels',
+    'psycopg2>=2.6.2',
+    'click>=6.7',
+    'crayons'
+]
 requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0']
 
 setup(
     name='datapunt-authorization',
-    version='0.2.0',
+    version='0.2.1',
     description='Datapunt authorization',
     long_description=long_description,
     url='https://github.com/DatapuntAmsterdam/authorization',
@@ -60,9 +68,6 @@ setup(
     packages=packages,
     install_requires=requires,
     tests_require=requires_test,
-    extras_require={
-        'cli': ['click>=6.7', 'crayons'],
-    },
     entry_points={'console_scripts': [
         'authz = authorization.cli:cli [cli]',
     ]},
