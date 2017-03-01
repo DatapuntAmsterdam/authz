@@ -46,7 +46,7 @@ requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0']
 
 setup(
     name='datapunt-authorization',
-    version='0.2.1',
+    version='0.2.2',
     description='Datapunt authorization',
     long_description=long_description,
     url='https://github.com/DatapuntAmsterdam/authorization',
