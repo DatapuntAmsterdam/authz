@@ -36,6 +36,73 @@ _q_del_user = "DELETE FROM user_authz WHERE username=%s"
 _q_cnt_all = "SELECT COUNT(*) FROM user_authz"
 
 
+class _DBConnection:
+    """ Wraps a PostgreSQL database connection that reports crashes and tries
+    its best to repair broken connections.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.conn_args = args
+        self.conn_kwargs = kwargs
+        self._conn = None
+        self._connect()
+
+    def _connect(self):
+        if self._conn is None:
+            self._conn = psycopg2.connect(*self.conn_args, **self.conn_kwargs)
+            self._conn.autocommit = True
+
+    def _is_usable(self):
+        """ Checks whether the connection is usable.
+
+        :returns boolean: True if we can query the database, False otherwise
+        """
+        try:
+            self.connection.cursor().execute("SELECT 1")
+        except psycopg2.DatabaseError:
+            return False
+        else:
+            return True
+
+    @contextlib.contextmanager
+    def _connection(self):
+        """ Contextmanager that catches tries to ensure we have a database
+        connection. Yields a Connection object.
+
+        If a :class:`psycopg2.DatabaseError` occurs then it will check whether
+        the connection is still usable, and if it's not, close and remove it.
+        """
+        try:
+            self._connect()
+            yield self._conn
+        except psycopg2.DatabaseError as e:
+            _logger.critical('AUTHZ DatabaseError: {}'.format(e))
+            if not self._is_usable():
+                try:
+                    self._conn.close()
+                except:
+                    pass
+                self._conn = None
+            raise e
+
+    @contextlib.contextmanager
+    def transaction_cursor(self):
+        """ Yields a cursor with transaction.
+        """
+        with self._connection() as conn:
+            with conn:  # <- transaction
+                with conn.cursor() as cur:
+                    yield cur
+
+    @contextlib.contextmanager
+    def cursor(self):
+        """ Yields a cursor without transaction.
+        """
+        with self._connection() as conn:
+            with conn.cursor() as cur:
+                yield cur
+
+
 class AuthzMap(collections.abc.MutableMapping):
     """ A MutableMapping, mapping usernames to authorization levels, backed by
     Postgres.
@@ -57,21 +124,12 @@ class AuthzMap(collections.abc.MutableMapping):
     """
 
     def __init__(self, *args, **kwargs):
-        self._conn = psycopg2.connect(*args, **kwargs)
-        self._conn.autocommit = True
-
-    @contextlib.contextmanager
-    def _transaction(self):
-        """ Convenience contextmanager for transactions.
-        """
-        with self._conn:
-            with self._conn.cursor() as cur:
-                yield cur
+        self._conn = _DBConnection(*args, **kwargs)
 
     def create(self):
         """ Create the tables for authz.
         """
-        with self._transaction() as cur:
+        with self._conn.transaction_cursor() as cur:
             cur.execute(_q_crt_user_authz)
             if cur.rowcount > 0:
                 _logger.info("Authz user tables created")
@@ -92,7 +150,7 @@ class AuthzMap(collections.abc.MutableMapping):
             q = (_q_upd_authz_level, (authz_level, username))
         except KeyError:
             q = (_q_ins_user, (username, authz_level))
-        with self._transaction() as cur:
+        with self._conn.transaction_cursor() as cur:
             cur.execute(*q)
             cur.execute(_q_log_change, (username, authz_level, True))
 
@@ -111,7 +169,7 @@ class AuthzMap(collections.abc.MutableMapping):
         the audit log.
         """
         cur_authz_level = self[username]
-        with self._transaction() as cur:
+        with self._conn.transaction_cursor() as cur:
             cur.execute(_q_del_user, (username,))
             cur.execute(_q_log_change, (username, cur_authz_level, False))
 
