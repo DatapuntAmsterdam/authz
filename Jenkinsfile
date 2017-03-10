@@ -18,23 +18,21 @@ def tryStep(String message, Closure block, Closure tearDown = null) {
 
 
 node {
-
     stage("Checkout") {
         checkout scm
     }
 
     stage('Test') {
-        tryStep "Test", {
+        tryStep "test", {
             sh "docker build -t authorization --pull ."
             sh "docker run --user root --rm authorization make -C /app/ coverage"
-	      }, {}
+	      }
     }
 
-    stage("Build develop image") {
+    stage("Build image") {
         tryStep "build", {
             def image = docker.build("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
             image.push()
-            image.push("acceptance")
         }
     }
 }
@@ -43,49 +41,54 @@ String BRANCH = "${env.BRANCH_NAME}"
 
 if (BRANCH == "master") {
 
-node {
-    stage("Deploy to ACC") {
-    tryStep "deployment", {
-        build job: 'Subtask_Openstack_Playbook',
+    node {
+        stage('Push acceptance image') {
+            tryStep "image tagging", {
+                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
+                image.pull()
+                image.push("acceptance")
+            }
+        }
+    }
+
+    node {
+        stage("Deploy to ACC") {
+            tryStep "deployment", {
+                build job: 'Subtask_Openstack_Playbook',
                 parameters: [
-                        [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
-                        [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-authorization.yml'],
-                        [$class: 'StringParameterValue', name: 'BRANCH', value: 'master'],
+                    [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-authorization.yml'],
                 ]
+            }
         }
     }
-}
 
 
-stage('Waiting for approval') {
-    slackSend channel: '#ci-channel', color: 'warning', message: 'Authorization is waiting for Production Release - please confirm'
-    input "Deploy to Production?"
-}
+    stage('Waiting for approval') {
+        slackSend channel: '#ci-channel', color: 'warning', message: 'Authorization is waiting for Production Release - please confirm'
+        input "Deploy to Production?"
+    }
 
-
-
-node {
-    stage('Push production image') {
-    tryStep "image tagging", {
-        def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
-        image.pull()
-
-            image.push("production")
-            image.push("latest")
+    node {
+        stage('Push production image') {
+            tryStep "image tagging", {
+                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
+                image.pull()
+                image.push("production")
+                image.push("latest")
+            }
         }
     }
-}
 
-node {
-    stage("Deploy") {
-        tryStep "deployment", {
-            build job: 'Subtask_Openstack_Playbook',
-                    parameters: [
-                            [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
-                            [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-authorization.yml'],
-                            [$class: 'StringParameterValue', name: 'BRANCH', value: 'master'],
-                    ]
+    node {
+        stage("Deploy") {
+            tryStep "deployment", {
+                build job: 'Subtask_Openstack_Playbook',
+                parameters: [
+                    [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-authorization.yml'],
+                ]
+            }
         }
     }
-}
 }
