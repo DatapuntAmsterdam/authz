@@ -58,7 +58,7 @@ class _DBConnection:
         :returns boolean: True if we can query the database, False otherwise
         """
         try:
-            self.connection.cursor().execute("SELECT 1")
+            self._conn.cursor().execute("SELECT 1")
         except psycopg2.DatabaseError:
             return False
         else:
@@ -78,10 +78,8 @@ class _DBConnection:
         except psycopg2.DatabaseError as e:
             _logger.critical('AUTHZ DatabaseError: {}'.format(e))
             if not self._is_usable():
-                try:
+                with contextlib.suppress(psycopg2.Error):
                     self._conn.close()
-                except:
-                    pass
                 self._conn = None
             raise e
 
@@ -89,9 +87,9 @@ class _DBConnection:
     def transaction_cursor(self):
         """ Yields a cursor with transaction.
         """
-        with self._connection() as conn:
-            with conn:  # <- transaction
-                with conn.cursor() as cur:
+        with self._connection() as transaction:
+            with transaction:
+                with transaction.cursor() as cur:
                     yield cur
 
     @contextlib.contextmanager
