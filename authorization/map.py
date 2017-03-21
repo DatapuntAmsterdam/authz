@@ -59,7 +59,7 @@ class _DBConnection:
         """
         try:
             self._conn.cursor().execute("SELECT 1")
-        except psycopg2.DatabaseError:
+        except psycopg2.Error:
             return False
         else:
             return True
@@ -75,7 +75,7 @@ class _DBConnection:
         try:
             self._connect()
             yield self._conn
-        except psycopg2.DatabaseError as e:
+        except psycopg2.Error as e:
             _logger.critical('AUTHZ DatabaseError: {}'.format(e))
             if not self._is_usable():
                 with contextlib.suppress(psycopg2.Error):
