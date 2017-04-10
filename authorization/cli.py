@@ -64,6 +64,20 @@ def assign(ctx, level):
 
 
 @user.command()
+@click.argument('passwd', type=str)
+@click.pass_context
+def password(ctx, passwd):
+    authzmap = ctx.parent.authzmap
+    user = ctx.parent.user
+    try:
+        authzmap.set_password(user, passwd)
+    except ValueError as e:
+        print(crayons.red(str(e)))
+        return
+    print(crayons.green('User {} now has a new password'.format(user)))
+
+
+@user.command()
 @click.pass_context
 def info(ctx):
     authzmap = ctx.parent.authzmap

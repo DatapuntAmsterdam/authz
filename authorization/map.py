@@ -8,32 +8,37 @@ import logging
 import psycopg2
 import authorization_levels
 
+from . import password_hasher
+
 _logger = logging.getLogger(__name__)
 
 _valid_levels = {getattr(authorization_levels, l) for l in dir(authorization_levels) if l[:6] == 'LEVEL_' and l != 'LEVEL_DEFAULT'}
 
-_q_crt_user_authz = """
-    CREATE TABLE IF NOT EXISTS user_authz (
-        username text PRIMARY KEY,
-        authz_level integer DEFAULT 0
+_q_crt_user_authz_authn = """
+    CREATE TABLE IF NOT EXISTS user_authz_authn (
+        email character varying(254) PRIMARY KEY,
+        password character varying(128),
+        authz_level integer NOT NULL DEFAULT 0
     );"""
-_q_crt_user_authz_auditlog = """
-    CREATE TABLE IF NOT EXISTS user_authz_audit (
-        username text,
-        authz_level integer,
+_q_crt_user_authz_authn_auditlog = """
+    CREATE TABLE IF NOT EXISTS user_authz_authn_audit (
+        email character varying(254) NOT NULL,
+        authz_level integer DEFAULT 0,
         ts timestamp without time zone DEFAULT (now() at time zone 'utc'),
         active boolean
     );"""
 _q_log_change = """
-    INSERT INTO user_authz_audit (
-        username, authz_level, active
+    INSERT INTO user_authz_authn_audit (
+        email, authz_level, active
     ) VALUES(%s, %s, %s);"""
-_q_upd_authz_level = "UPDATE user_authz SET authz_level=%s WHERE username=%s"
-_q_ins_user = "INSERT INTO user_authz (username, authz_level) VALUES(%s, %s)"
-_q_sel_authz_level = "SELECT authz_level from user_authz WHERE username=%s"
-_q_sel_all = "SELECT username FROM user_authz"
-_q_del_user = "DELETE FROM user_authz WHERE username=%s"
-_q_cnt_all = "SELECT COUNT(*) FROM user_authz"
+_q_upd_authz_level = "UPDATE user_authz_authn SET authz_level=%s WHERE email=%s"
+_q_upd_password = "UPDATE user_authz_authn SET password=%s WHERE email=%s"
+_q_ins_user = "INSERT INTO user_authz_authn (email, authz_level) VALUES(%s, %s)"
+_q_sel_authz_level = "SELECT authz_level FROM user_authz_authn WHERE email=%s"
+_q_sel_password = "SELECT password FROM user_authz_authn WHERE email=%s"
+_q_sel_all = "SELECT email FROM user_authz_authn"
+_q_del_user = "DELETE FROM user_authz_authn WHERE email=%s"
+_q_cnt_all = "SELECT COUNT(*) FROM user_authz_authn"
 
 
 class _DBConnection:
@@ -116,7 +121,7 @@ class AuthzMap(collections.abc.MutableMapping):
 
         authzmap = authorization.AuthzMap(**psycopgconf)
 
-        if authzmap['myuser'] == authorization_levels.LEVEL_EMPLOYEE:
+        if authzmap['myuser@example.com'] == authorization_levels.LEVEL_EMPLOYEE:
             ...  # do some eployee-e things
 
     """
@@ -128,48 +133,48 @@ class AuthzMap(collections.abc.MutableMapping):
         """ Create the tables for authz.
         """
         with self._conn.transaction_cursor() as cur:
-            cur.execute(_q_crt_user_authz)
+            cur.execute(_q_crt_user_authz_authn)
             if cur.rowcount > 0:
                 _logger.info("Authz user tables created")
-            cur.execute(_q_crt_user_authz_auditlog)
+            cur.execute(_q_crt_user_authz_authn_auditlog)
             if cur.rowcount > 0:
                 _logger.info("Authz auditlog tables created")
 
-    def __setitem__(self, username, authz_level):
+    def __setitem__(self, email, authz_level):
         """ Assign the given permission to the given user and log the action in
         the audit log.
         """
         if authz_level not in _valid_levels:
-            raise ValueError()
+            raise ValueError('Unknown authorization level')
         try:
-            cur_authz_level = self[username]
-            if authz_level == cur_authz_level:
+            current_authz_level = self[email]
+            if authz_level == current_authz_level:
                 return
-            q = (_q_upd_authz_level, (authz_level, username))
+            q = (_q_upd_authz_level, (authz_level, email))
         except KeyError:
-            q = (_q_ins_user, (username, authz_level))
+            q = (_q_ins_user, (email, authz_level))
         with self._conn.transaction_cursor() as cur:
             cur.execute(*q)
-            cur.execute(_q_log_change, (username, authz_level, True))
+            cur.execute(_q_log_change, (email, authz_level, True))
 
-    def __getitem__(self, username):
+    def __getitem__(self, email):
         """ Get the current authorization level for the given username.
         """
         with self._conn.cursor() as cur:
-            cur.execute(_q_sel_authz_level, (username,))
+            cur.execute(_q_sel_authz_level, (email,))
             result = cur.fetchone()
         if not result:
             raise KeyError()
         return result[0]
 
-    def __delitem__(self, username):
+    def __delitem__(self, email):
         """ Remove the given user from the authz table and log the action in
         the audit log.
         """
-        cur_authz_level = self[username]
+        cur_authz_level = self[email]
         with self._conn.transaction_cursor() as cur:
-            cur.execute(_q_del_user, (username,))
-            cur.execute(_q_log_change, (username, cur_authz_level, False))
+            cur.execute(_q_del_user, (email,))
+            cur.execute(_q_log_change, (email, cur_authz_level, False))
 
     def __iter__(self):
         """ Iterate over all username => authz_levels currently in the table.
@@ -185,3 +190,23 @@ class AuthzMap(collections.abc.MutableMapping):
         with self._conn.cursor() as cur:
             cur.execute(_q_cnt_all)
             return cur.fetchone()[0]
+
+    def set_password(self, email, password):
+        """Sets a password"""
+        try:
+            _ = self[email]
+        except KeyError:
+            raise ValueError("User not found")
+        if len(password) < 8:
+            raise ValueError("Password too short")
+        with self._conn.transaction_cursor() as cur:
+            cur.execute(_q_upd_password, (password_hasher.encode(password), email))
+
+    def verify_password(self, email, password):
+        """Verifies a password."""
+        with self._conn.cursor() as cur:
+            cur.execute(_q_sel_password, (email,))
+            result = cur.fetchone()
+        if not result:
+            raise KeyError()
+        return password_hasher.verify(password, result[0])
