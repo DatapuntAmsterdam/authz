@@ -20,8 +20,9 @@ def authz_mapper(**psycopg2conf):
 
     ::
 
-        mapper = authz.authz_mapper(psycopg2conf)
+        mapper, validator = authz.authz_mapper(psycopg2conf)
         mapper('username')  # => returns username's authz level
+        validator('john@example.com', 'password')  # => returns True if password is correct, otherwise false
 
     :param psycopg2conf: See :function:`psycopg2.connect`
     :return: One of LEVEL_* defined in :module:`authorization_levels`
@@ -31,8 +32,15 @@ def authz_mapper(**psycopg2conf):
 
     authzmap = AuthzMap(**psycopg2conf)
 
-    def getter(username):
-        default_level = (username and authorization_levels.LEVEL_EMPLOYEE) or authorization_levels.LEVEL_DEFAULT
-        return authzmap.get(username, default_level)
+    def getter(email):
+        default_level = (email and authorization_levels.LEVEL_EMPLOYEE) or authorization_levels.LEVEL_DEFAULT
+        return authzmap.get(email, default_level)
 
-    return getter
+    def validator(email, password):
+        try:
+            retval = authzmap.verify_password(email, password)
+        except KeyError:
+            return False
+        return retval
+
+    return getter, validator
