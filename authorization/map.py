@@ -207,6 +207,4 @@ class AuthzMap(collections.abc.MutableMapping):
         with self._conn.cursor() as cur:
             cur.execute(_q_sel_password, (email,))
             result = cur.fetchone()
-        if not result:
-            raise KeyError()
-        return password_hasher.verify(password, result[0])
+        return result and password_hasher.verify(password, result[0])
