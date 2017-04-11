@@ -144,6 +144,7 @@ class AuthzMap(collections.abc.MutableMapping):
         """ Assign the given permission to the given user and log the action in
         the audit log.
         """
+        email = str(email).lower()
         if authz_level not in _valid_levels:
             raise ValueError('Unknown authorization level')
         try:
@@ -160,6 +161,7 @@ class AuthzMap(collections.abc.MutableMapping):
     def __getitem__(self, email):
         """ Get the current authorization level for the given username.
         """
+        email = str(email).lower()
         with self._conn.cursor() as cur:
             cur.execute(_q_sel_authz_level, (email,))
             result = cur.fetchone()
@@ -171,6 +173,7 @@ class AuthzMap(collections.abc.MutableMapping):
         """ Remove the given user from the authz table and log the action in
         the audit log.
         """
+        email = str(email).lower()
         cur_authz_level = self[email]
         with self._conn.transaction_cursor() as cur:
             cur.execute(_q_del_user, (email,))
@@ -193,6 +196,7 @@ class AuthzMap(collections.abc.MutableMapping):
 
     def set_password(self, email, password):
         """Sets a password"""
+        email = str(email).lower()
         try:
             _ = self[email]
         except KeyError:
@@ -204,6 +208,7 @@ class AuthzMap(collections.abc.MutableMapping):
 
     def verify_password(self, email, password):
         """Verifies a password."""
+        email = str(email).lower()
         with self._conn.cursor() as cur:
             cur.execute(_q_sel_password, (email,))
             result = cur.fetchone()
