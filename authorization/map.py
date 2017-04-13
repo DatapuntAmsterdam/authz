@@ -24,13 +24,9 @@ _q_crt_user_authz_authn_auditlog = """
     CREATE TABLE IF NOT EXISTS user_authz_authn_audit (
         email character varying(254) NOT NULL,
         authz_level integer DEFAULT 0,
-        ts timestamp without time zone DEFAULT (now() at time zone 'utc'),
-        active boolean
+        ts timestamp without time zone DEFAULT (now() at time zone 'utc')
     );"""
-_q_log_change = """
-    INSERT INTO user_authz_authn_audit (
-        email, authz_level, active
-    ) VALUES(%s, %s, %s);"""
+_q_log_change = "INSERT INTO user_authz_authn_audit (email, authz_level) VALUES(%s, %s);"
 _q_upd_authz_level = "UPDATE user_authz_authn SET authz_level=%s WHERE email=%s"
 _q_upd_password = "UPDATE user_authz_authn SET password=%s WHERE email=%s"
 _q_ins_user = "INSERT INTO user_authz_authn (email, authz_level) VALUES(%s, %s)"
@@ -156,7 +152,7 @@ class AuthzMap(collections.abc.MutableMapping):
             q = (_q_ins_user, (email, authz_level))
         with self._conn.transaction_cursor() as cur:
             cur.execute(*q)
-            cur.execute(_q_log_change, (email, authz_level, True))
+            cur.execute(_q_log_change, (email, authz_level))
 
     def __getitem__(self, email):
         """ Get the current authorization level for the given username.
@@ -177,7 +173,7 @@ class AuthzMap(collections.abc.MutableMapping):
         cur_authz_level = self[email]
         with self._conn.transaction_cursor() as cur:
             cur.execute(_q_del_user, (email,))
-            cur.execute(_q_log_change, (email, cur_authz_level, False))
+            cur.execute(_q_log_change, (email, authorization_levels.LEVEL_DEFAULT))
 
     def __iter__(self):
         """ Iterate over all username => authz_levels currently in the table.
