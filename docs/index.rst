@@ -2,7 +2,7 @@ Datapunt: Authorization
 =======================
 
 Authorization logic for the city of Amsterdam's `open data services
-<https://api.datapunt.amsterdam.nl/api/>`_.
+<https://api.data.amsterdam.nl/api/>`_.
 
 About
 -----
