@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Command Line Interface &#8212; Datapunt Authorization 0.3.x documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.3.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Docs" href="api.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="library.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="command-line-interface">
+<span id="cli"></span><h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h1>
+<p>The command line interface is deployed as a docker (called <em>authorization</em>) in
+our <span class="xref std std-term">docker engines</span>.  The command itself is called
+<code class="docutils literal"><span class="pre">authz</span></code> and can be executed <em>from outside the docker</em> using the
+<code class="docutils literal"><span class="pre">docker</span> <span class="pre">exec</span></code> command on the docker engine.  You’ll need to be root:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="c1"># From your local machine:</span>
+ssh dc01.datapunt.amsterdam.nl
+
+<span class="c1"># Then, on dc01:</span>
+sudo su -
+docker <span class="nb">exec</span> -t authorization authz
+</pre></div>
+</div>
+<p>Without options, this command will return some usage info:</p>
+<div class="highlight-text"><div class="highlight"><pre><span></span>Usage: authz [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --debug
+  --psql-host TEXT
+  --psql-port INTEGER
+  --psql-db TEXT
+  --psql-user TEXT
+  --psql-password TEXT
+  --help                Show this message and exit.
+
+Commands:
+  user
+</pre></div>
+</div>
+<div class="section" id="checking-the-authorization-level-of-a-user">
+<h2>Checking the authorization level of a user<a class="headerlink" href="#checking-the-authorization-level-of-a-user" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker <span class="nb">exec</span> -t authorization authz &lt;email&gt; info
+</pre></div>
+</div>
+</div>
+<div class="section" id="setting-the-authorization-level-of-a-user">
+<h2>Setting the authorization level of a user<a class="headerlink" href="#setting-the-authorization-level-of-a-user" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker <span class="nb">exec</span> -t authorization authz &lt;email&gt; assign &lt;level&gt;
+</pre></div>
+</div>
+<p>where <cite>&lt;level&gt;</cite> must be one of <cite>DEFAULT</cite>, <cite>EMPLOYEE</cite>, or <cite>EMPLOYEE_PLUS</cite>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Setting the authorization level to <cite>DEFAULT</cite> will <em>remove</em> the user from
+the authorization database (if present).</li>
+<li>Setting the authorization level to anything else will <em>add</em> the user to
+the authorization database if not already present.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="setting-the-password-of-a-user">
+<h2>Setting the password of a user<a class="headerlink" href="#setting-the-password-of-a-user" title="Permalink to this headline">¶</a></h2>
+<p>Currently, the CLI doesn’t automatically create passwords for new users. You’ll
+have to create these yourself, using a cryptographically strong Pseudo-Random
+Number Generator (PRNG). When you have a sufficiently strong password:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker <span class="nb">exec</span> -t authorization authz &lt;email&gt; password &lt;password&gt;
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Make sure the password is properly escaped, especially if it contains
+characters that are interpreted by the shell, such as <code class="docutils literal"><span class="pre">$?`&quot;'|&amp;(){}</span></code>
+etcetera.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Command Line Interface</a><ul>
+<li><a class="reference internal" href="#checking-the-authorization-level-of-a-user">Checking the authorization level of a user</a></li>
+<li><a class="reference internal" href="#setting-the-authorization-level-of-a-user">Setting the authorization level of a user</a></li>
+<li><a class="reference internal" href="#setting-the-password-of-a-user">Setting the password of a user</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="library.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="api.html" title="next chapter">API Docs</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cli.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Evert Lammerts.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/cli.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
