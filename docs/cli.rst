@@ -67,7 +67,7 @@ Currently, the CLI doesn't automatically create passwords for new users. You'll
 have to create these yourself, using a cryptographically strong Pseudo-Random
 Number Generator (PRNG). When you have a sufficiently strong password::
 
-    docker exec -t authorization authz <email> password <password>
+    docker exec -t authorization authz user <email> password <password>
 
 .. warning::
 
