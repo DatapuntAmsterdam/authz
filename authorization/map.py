@@ -40,6 +40,9 @@ _q_cnt_all = "SELECT COUNT(*) FROM user_authz_authn"
 class _DBConnection:
     """ Wraps a PostgreSQL database connection that reports crashes and tries
     its best to repair broken connections.
+
+    NOTE: doesn't always work, but the failure scenario is very hard to
+      reproduce. Also see https://github.com/psycopg/psycopg2/issues/263
     """
 
     def __init__(self, *args, **kwargs):
