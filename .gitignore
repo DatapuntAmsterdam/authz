@@ -2,11 +2,14 @@
 .project
 .pydevproject
 
+# For PyCharm (IntelliJ)
+.editorconfig
+
 # Python bytecode and cache
 *.pyc
 **/__pycache__
 
-# Pipenv
+# venv
 .venv
 
 # Sphinx
