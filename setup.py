@@ -38,7 +38,7 @@ packages = ['authorization']
 # argparse and have colored CLI output. :(
 requires = [
     'datapunt-authorization-levels',
-    'psycopg2>=2.6.2',
+    'psycopg2-binary',
     'click>=6.7',
     'crayons'
 ]
