@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED 1
 RUN adduser --system datapunt
 
 COPY . /app/
-RUN pip install --no-cache-dir /app[cli]
+RUN pip install --no-cache-dir /app
 
 USER datapunt
 

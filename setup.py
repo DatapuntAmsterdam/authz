@@ -32,24 +32,21 @@ class PyTest(TestCommand):
 with open('README.rst', encoding='utf-8') as f:
     long_description = f.read()
 
-packages = ['authorization']
+packages = ['dpuser']
 
-# The 'click' and 'crayons' libraries are needed so Evert can avoid using
-# argparse and have colored CLI output. :(
+# The 'click' library is for subcommands in the CLI.
 requires = [
-    'datapunt-authorization-levels',
     'psycopg2-binary',
     'click>=6.7',
-    'crayons'
 ]
 requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0']
 
 setup(
-    name='datapunt-authorization',
+    name='datapunt-user',
     version='0.3.3',
-    description='Datapunt authorization',
+    description='Datapunt dpuser',
     long_description=long_description,
-    url='https://github.com/DatapuntAmsterdam/authorization',
+    url='https://github.com/DatapuntAmsterdam/dpuser',
     author='Amsterdam Datapunt',
     author_email='datapunt.ois@amsterdam.nl',
     license='Mozilla Public License Version 2.0',
@@ -65,10 +62,11 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     cmdclass={'test': PyTest},
+    package_dir={'': 'src'},
     packages=packages,
     install_requires=requires,
     tests_require=requires_test,
     entry_points={'console_scripts': [
-        'authz = authorization.cli:cli',
+        'dpuser = dpuser.cli:cli',
     ]},
 )

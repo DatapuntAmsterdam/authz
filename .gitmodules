@@ -1,4 +1,0 @@
-[submodule "docs/gh-pages"]
-	path = docs/gh-pages
-	url = git@github.com:DatapuntAmsterdam/authorization.git
-	branch = gh-pages

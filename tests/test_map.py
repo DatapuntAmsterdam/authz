@@ -1,11 +1,9 @@
-"""
-"""
 import contextlib
 
 import psycopg2
 import pytest
 
-from authorization import map
+from src.dpuser import users
 
 
 class Cursor(contextlib.AbstractContextManager):
@@ -44,14 +42,14 @@ def dbconn(monkeypatch):
 
 @pytest.fixture(scope='function')
 def dbconnection():
-    return map._DBConnection(
+    return users._DBConnection(
         dbname='test', user='test', password='test', host='test'
     )
 
 
 @pytest.fixture(scope='function')
 def dbconnection_bad_cursor():
-    dbconnection = map._DBConnection(
+    dbconnection = users._DBConnection(
         dbname='test', user='test', password='test', host='test'
     )
 
