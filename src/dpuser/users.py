@@ -1,4 +1,3 @@
-import collections.abc
 import contextlib
 import logging
 import psycopg2
@@ -86,9 +85,8 @@ class _DBConnection:
                 yield cur
 
 
-class Users(collections.abc.MutableMapping):
-    """ A MutableMapping, mapping usernames to passwords, backed by Postgres.
-
+class Users:
+    """
     See :func:`psycopg2.connect` for constructor arguments.
 
     Usage:

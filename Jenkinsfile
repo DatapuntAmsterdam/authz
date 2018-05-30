@@ -24,14 +24,14 @@ node {
 
     stage('Test') {
         tryStep "test", {
-            sh "docker build -t authorization --pull ."
-            sh "docker run --user root --rm authorization make -C /app/ coverage"
+            sh "docker build -t accountscli --pull ."
+            sh "docker run --user root --rm accountscli make -C /app/ test"
 	      }
     }
 
     stage("Build image") {
         tryStep "build", {
-            def image = docker.build("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
+            def image = docker.build("build.datapunt.amsterdam.nl:5000/datapunt/accountscli:${env.BUILD_NUMBER}")
             image.push()
         }
     }
@@ -44,7 +44,7 @@ if (BRANCH == "master") {
     node {
         stage('Push acceptance image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
+                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/accountscli:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("acceptance")
             }
@@ -57,7 +57,7 @@ if (BRANCH == "master") {
                 build job: 'Subtask_Openstack_Playbook',
                 parameters: [
                     [$class: 'StringParameterValue', name: 'INVENTORY', value: 'acceptance'],
-                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-authorization.yml'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-accountscli.yml'],
                 ]
             }
         }
@@ -65,14 +65,14 @@ if (BRANCH == "master") {
 
 
     stage('Waiting for approval') {
-        slackSend channel: '#ci-channel', color: 'warning', message: 'Authorization is waiting for Production Release - please confirm'
+        slackSend channel: '#ci-channel', color: 'warning', message: 'Accountscli is waiting for Production Release - please confirm'
         input "Deploy to Production?"
     }
 
     node {
         stage('Push production image') {
             tryStep "image tagging", {
-                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/authorization:${env.BUILD_NUMBER}")
+                def image = docker.image("build.datapunt.amsterdam.nl:5000/datapunt/accountscli:${env.BUILD_NUMBER}")
                 image.pull()
                 image.push("production")
                 image.push("latest")
@@ -86,7 +86,7 @@ if (BRANCH == "master") {
                 build job: 'Subtask_Openstack_Playbook',
                 parameters: [
                     [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
-                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-authorization.yml'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-accountscli.yml'],
                 ]
             }
         }

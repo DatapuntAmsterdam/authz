@@ -42,9 +42,9 @@ requires = [
 requires_test = ['pytest>=3.0.5', 'pytest-cov>=2.4.0']
 
 setup(
-    name='datapunt-user',
-    version='0.3.3',
-    description='Datapunt dpuser',
+    name='datapunt-accounts',
+    version='1.0.0-rc.1',
+    description='Datapunt accounts',
     long_description=long_description,
     url='https://github.com/DatapuntAmsterdam/dpuser',
     author='Amsterdam Datapunt',

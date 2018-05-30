@@ -1,0 +1,10 @@
+version: '3.0'
+services:
+  database:
+    image: postgres:9.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: accounts
+      POSTGRES_USER: dpuser
+      POSTGRES_PASSWORD: dpuser

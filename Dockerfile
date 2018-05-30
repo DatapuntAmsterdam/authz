@@ -1,7 +1,4 @@
-FROM amsterdam/python
-MAINTAINER datapunt@amsterdam.nl
-
-ENV PYTHONUNBUFFERED 1
+FROM python:3.6-slim
 
 RUN adduser --system datapunt
 

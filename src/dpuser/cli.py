@@ -5,21 +5,11 @@ from .users import Users
 
 @click.group()
 @click.option('--debug', is_flag=True)
-@click.option('--psql-host', default='localhost', type=str, envvar='DB_HOST')
-@click.option('--psql-port', default=5432, type=int, envvar='DB_PORT')
-@click.option('--psql-db', default='authz', type=str, envvar='DB_DATABASE')
-@click.option('--psql-user', default='authuser', type=str, envvar='DB_USER')
-@click.option('--psql-password', default='authpassword', type=str, prompt=True, hide_input=True, envvar='DB_PASS')
+@click.option('--dsn', default='postgresql://dpuser:dpuser@localhost:5432/accounts', type=str, envvar='DB_DSN')
 @click.pass_context
-def cli(ctx, debug, psql_host, psql_port, psql_db, psql_user, psql_password):
+def cli(ctx, debug, dsn):
     try:
-        users = Users(
-            host=psql_host,
-            port=psql_port,
-            dbname=psql_db,
-            user=psql_user,
-            password=psql_password
-        )
+        users = Users(dsn)
     except psycopg2.OperationalError as e:
         print("ERROR: Could not connect to the database")
         if debug:
@@ -52,7 +42,7 @@ def set(ctx, user, password):
     try:
         users.set(user, password)
     except KeyError:
-        print(crayons.red("User doesn't exist"))
+        print("User doesn't exist")
         sys.exit(1)
 
 
