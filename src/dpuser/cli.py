@@ -48,7 +48,6 @@ def set(ctx, user, password):
 
 @cli.command()
 @click.argument('user', type=str)
-@click.argument('password', type=str)
 @click.pass_context
 def remove(ctx, user):
     users = ctx.parent.users
