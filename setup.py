@@ -25,6 +25,7 @@ class PyTest(TestCommand):
     def run_tests(self):
         import pytest
 
+        self.pytest_args = self.pytest_args.split(" ")
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
