@@ -87,6 +87,9 @@ if (BRANCH == "master") {
                 parameters: [
                     [$class: 'StringParameterValue', name: 'INVENTORY', value: 'production'],
                     [$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy-accountscli.yml'],
+			[$class: 'StringParameterValue', name: 'PLAYBOOK', value: 'deploy.yml'],
+                    [$class: 'StringParameterValue', name: 'PLAYBOOKPARAMS', value: "-e cmdb_id=app_accountscli"],
+
                 ]
             }
         }
